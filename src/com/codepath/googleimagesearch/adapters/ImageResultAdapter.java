@@ -1,5 +1,6 @@
 package com.codepath.googleimagesearch.adapters;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -15,13 +16,16 @@ import com.codepath.googleimagesearch.R;
 import com.codepath.googleimagesearch.models.ImageResult;
 import com.etsy.android.grid.util.DynamicHeightImageView;
 import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 import com.squareup.picasso.Picasso;
 
 public class ImageResultAdapter extends ArrayAdapter<ImageResult> {
 	
 	private final LayoutInflater mLayoutInflater;
 	private final Random mRandom;
+	private final ArrayList<Integer> mBackgroundColors;
 	private static final SparseArray<Double> sPositionHeightRatios = new SparseArray<Double>();
+	public ImageLoader imageLoader = ImageLoader.getInstance();
 	
 	public static class ViewHolder {
 		DynamicHeightImageView ivImage;
@@ -32,6 +36,13 @@ public class ImageResultAdapter extends ArrayAdapter<ImageResult> {
 		super(context, android.R.layout.simple_list_item_1, objects);
 		this.mLayoutInflater = LayoutInflater.from(context);
 		this.mRandom = new Random();
+		mBackgroundColors = new ArrayList<Integer>();
+        mBackgroundColors.add(android.R.color.holo_orange_light);
+        mBackgroundColors.add(android.R.color.holo_green_dark);
+        mBackgroundColors.add(android.R.color.holo_blue_bright);
+        mBackgroundColors.add(android.R.color.holo_red_dark);
+        mBackgroundColors.add(android.R.color.darker_gray);
+		imageLoader.init(ImageLoaderConfiguration.createDefault(context));
 	}
 
 	@Override
@@ -56,10 +67,18 @@ public class ImageResultAdapter extends ArrayAdapter<ImageResult> {
 //			 Picasso.with(getContext()).load(imageInfo.thumbUrl).into(holder.ivImage);
 			 double positionHeight = getPositionRatio(position);
 			 
+			 int backgroundIndex = position >= mBackgroundColors.size() ?
+		                position % mBackgroundColors.size() : position;
+
+		        convertView.setBackgroundResource(mBackgroundColors.get(backgroundIndex));
+
+		        Log.d("adapter", "getView position:" + position + " h:" + positionHeight);
+			 
+			 
 			 holder.ivImage.setHeightRatio(positionHeight);
-//			 Picasso.with(getContext()).load(imageInfo.thumbUrl).into(holder.ivImage);
-			 ImageLoader.getInstance().displayImage(getItem(position).thumbUrl, holder.ivImage);
-		 }
+			 Picasso.with(getContext()).load(getItem(position).thumbUrl).into(holder.ivImage);
+//			 imageLoader.displayImage(imageInfo.url, holder.ivImage);
+		 }			
 		 catch(Exception e){
 			 e.printStackTrace();
 		 }

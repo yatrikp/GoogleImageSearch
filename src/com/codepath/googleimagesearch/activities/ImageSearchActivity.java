@@ -10,13 +10,15 @@ import org.json.JSONObject;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.media.Image;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.SearchView;
 import android.widget.SearchView.OnQueryTextListener;
@@ -27,6 +29,7 @@ import com.codepath.googleimagesearch.R;
 import com.codepath.googleimagesearch.adapters.ImageResultAdapter;
 import com.codepath.googleimagesearch.models.ImageFilter;
 import com.codepath.googleimagesearch.models.ImageResult;
+import com.codepath.googleimagesearch.sync.ImageDataSync;
 import com.etsy.android.grid.StaggeredGridView;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
@@ -38,9 +41,12 @@ public class ImageSearchActivity extends Activity implements AbsListView.OnScrol
 	private ArrayList<ImageResult> imageResults;
 	private ImageResultAdapter aImageResults;
 	private Context context;
-	private String query = "android";
+	private String queryVal = "android";
 	private SearchView searchView;
 	private ImageFilter imageFilter;
+	private boolean mHasRequestedMore;
+	
+	private int scrolledPageNo = 0;
 	
 	public static final String COLOR_KEY = "imgcolor";
 	public static final String SIZE_KEY = "imgsz";
@@ -66,23 +72,9 @@ public class ImageSearchActivity extends Activity implements AbsListView.OnScrol
 		aImageResults = new ImageResultAdapter(this, imageResults);
 		// link the adapter to the adapterview
 		gvResults.setAdapter(aImageResults);
-		
-		// OnItemClickListener
-		gvResults.setOnItemClickListener(new OnItemClickListener() {
-			@Override
-			public void onItemClick(AdapterView<?> parent, View view, int position,
-					long id) {
-				// creating the intent
-				Intent i = new Intent(ImageSearchActivity.this, ImageDisplayActivity.class);
-				// get the image result to display
-				ImageResult imageResult = imageResults.get(position);
-				// pass image result into the intent
-				i.putExtra("result", imageResult);
-				// launch the activity
-				startActivity(i);
-			}			
-		});		
-		
+		gvResults.setOnScrollListener(this);
+		gvResults.setOnItemClickListener(this);
+	
 		// OnItemLongClickListener
 		gvResults.setOnItemLongClickListener(new OnItemLongClickListener() {
 			@Override
@@ -93,19 +85,23 @@ public class ImageSearchActivity extends Activity implements AbsListView.OnScrol
 	        	return true;
 	        }
 	    });
-		
-		// OnScrollListener
-		gvResults.setOnScrollListener(new EndlessScrollListener() {
-	        @Override
-	        public void onLoadMore(int page, int totalItemsCount) {
-	        	if(page<=8){
-	        		fetchImages(query, page);
-	        	}
-	        }
-        });
-		fetchImages(query, 0);
+
+		makeNetworkCall(queryVal, scrolledPageNo);
 	}
 
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		 // Handle presses on the action bar items
+	    switch (item.getItemId()) {
+	        case R.id.action_filter:
+	        	showImageFilter();
+	        	return true;
+	        default:
+	            return super.onOptionsItemSelected(item);
+	    }
+	}
+	
+	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
@@ -115,10 +111,9 @@ public class ImageSearchActivity extends Activity implements AbsListView.OnScrol
 	    try{
 	    	searchView.setOnQueryTextListener(new OnQueryTextListener() {
 			       @Override
-			       public boolean onQueryTextSubmit(String q) {
-			    	   query = q;
-			    	   imageResults.clear();
-			    	   fetchImages(query, 0);
+			       public boolean onQueryTextSubmit(String query) {
+			    	   queryVal = query;
+			    	   prepareCall();
 			           return true;
 			       }
 
@@ -141,7 +136,17 @@ public class ImageSearchActivity extends Activity implements AbsListView.OnScrol
 		startActivityForResult(i, 26);
 	}
 	
-	private RequestParams constructRequestParam(){
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		if(requestCode == 26){
+			if(resultCode == RESULT_OK){
+				imageFilter = (ImageFilter) data.getSerializableExtra("result");
+				prepareCall();
+			}
+		}
+	}
+	
+	private RequestParams getRequestParams(){
 		RequestParams params = new RequestParams();
 		
 		if(!isEmpty(imageFilter.getColor())){
@@ -166,19 +171,72 @@ public class ImageSearchActivity extends Activity implements AbsListView.OnScrol
 		}
 		return false;
 	}
-	
-	// Handle on button click event for Search Button
-	public void onImageSearch(View v){
-//		query = etQuery.getText().toString();
-		fetchImages(query, 0);
-		StaggeredGridView gridView;
+
+	@Override
+	public void onItemClick(AdapterView<?> adapterView, View view,
+			int position, long id) {
+		Intent i = new Intent(ImageSearchActivity.this, ImageDisplayActivity.class);
+//		// get the image result to display
+		ImageResult imageResult = imageResults.get(position);
+//		// pass image result into the intent
+		i.putExtra("result", imageResult);
+//		// launch the activity
+		startActivity(i);
+		
+	}
+
+	@Override
+	public void onScrollStateChanged(AbsListView view, int scrollState) {
+		Log.d("Activity", "onScrollStateChanged:" + scrollState);
+	}
+
+	@Override
+	public void onScroll(AbsListView view, int firstVisibleItem,
+			int visibleItemCount, int totalItemCount) {
+		Log.d("Activity", "onScroll firstVisibleItem:" + firstVisibleItem +
+                " visibleItemCount:" + visibleItemCount +
+                " totalItemCount:" + totalItemCount);
+		
+		if (((firstVisibleItem + visibleItemCount) >= totalItemCount) && 
+			scrolledPageNo<=8 && totalItemCount > 0){
+			scrolledPageNo++;
+			makeNetworkCall(queryVal, scrolledPageNo);						
+		}
+		
+		
+//		if (!mHasRequestedMore) {	
+//            int lastInScreen = firstVisibleItem + visibleItemCount;
+//            if (lastInScreen >= totalItemCount &&
+//            		totalItemCount >= ((scrolledPageNo - 1) * 8) &&
+//            		scrolledPageNo <= 8) {
+//                Log.d("Activity", "onScroll lastInScreen - so load more");
+//                mHasRequestedMore = true;
+//                scrolledPageNo++;
+//                onLoadMoreItems();
+//            }	
+//        }	
+		
+	}
+		
+	private void prepareCall(){
+		clearAdapter();
+ 	   	System.gc();
+ 	   	if(!isEmpty(queryVal)){
+ 	 	   	makeNetworkCall(queryVal, 0);
+ 	   	}
 	}
 	
+	private void clearAdapter() {
+		aImageResults.clear();
+		aImageResults.notifyDataSetInvalidated();		
+	}
+
 	
-	private void fetchImages(String query, int pageNo){
+	private void makeNetworkCall(String query, int page){
+		String q = "q="+Uri.encode(query)+"&v=1.0&&rsz=8&start="+page*7;
 		AsyncHttpClient client = new AsyncHttpClient();
-		RequestParams requestParams = constructRequestParam();
-		String searchUrl = "https://ajax.googleapis.com/ajax/services/search/images?v=1.0&q=" + query + "&rsz=8&start=" + pageNo;
+		RequestParams requestParams = getRequestParams();
+		String searchUrl = "https://ajax.googleapis.com/ajax/services/search/images?v=1.0&q=" + q;
 		client.get(searchUrl, requestParams, new JsonHttpResponseHandler(){
 			@Override
 			public void onSuccess(int statusCode, Header[] headers,
@@ -204,26 +262,20 @@ public class ImageSearchActivity extends Activity implements AbsListView.OnScrol
 			}
 		});
 	}
-
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		 // Handle presses on the action bar items
-	    switch (item.getItemId()) {
-	        case R.id.action_filter:
-	        	showImageFilter();
-	        	return true;
-	        default:
-	            return super.onOptionsItemSelected(item);
-	    }
+	
+	private void parseJSONAndExtractImage(JSONArray jsonImages) throws JSONException{
+		ArrayList<ImageResult> list = new ArrayList<ImageResult>();
+		for(int i = 0; i < jsonImages.length(); i++){
+			JSONObject jsonImg = jsonImages.getJSONObject(i);
+			String thumb = jsonImg.getString("tbUrl");
+			if(isEmpty(thumb)){
+				Toast.makeText(this, "thumb url null", Toast.LENGTH_SHORT).show();
+				return;
+			}
+			ImageResult img = new ImageResult(jsonImg);
+			list.add(img);
+		}
+		aImageResults.addAll(list);
 	}
 	
-	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		if(requestCode == 26){
-			if(resultCode == RESULT_OK){
-				imageFilter = (ImageFilter) data.getSerializableExtra("result");
-				fetchImages(query, 0);
-			}
-		}
-	}
 }

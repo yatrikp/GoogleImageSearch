@@ -11,7 +11,10 @@ public class ImageResult implements Serializable {
 
 	private static final long serialVersionUID = -8405867704917952791L;
 	public String url;
+	
 	public String thumbUrl;
+	public int thumbWidth;
+	public int thumbHeight;
 	public String title;
 
 	public ImageResult(JSONObject json){
@@ -19,6 +22,8 @@ public class ImageResult implements Serializable {
 			this.url = json.getString("url");
 			this.thumbUrl = json.getString("tbUrl");
 			this.title = json.getString("title");
+			this.thumbWidth = json.getInt("tbWidth");
+			this.thumbHeight = json.getInt("tbHeight");
 		}
 		catch(JSONException e){
 			e.printStackTrace();

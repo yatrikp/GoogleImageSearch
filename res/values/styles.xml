@@ -17,4 +17,12 @@
         <!-- All customizations that are NOT specific to a particular API-level can go here. -->
     </style>
 
+    <style name="TextAppearance.Widget.ActionBar.Title"
+	       parent="@android:style/TextAppearance.Medium">
+	</style>
+	
+	<style name="TextAppearance.Widget.ActionBar.Subtitle"
+	       parent="@android:style/TextAppearance.Small">
+	</style>
+	
 </resources>

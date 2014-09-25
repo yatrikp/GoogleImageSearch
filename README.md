@@ -45,6 +45,9 @@ Time Spent : 30 hours
 
 Screenshots
 -----------
+
+Please click on the image below to see the demo!!!
+
 [![ScreenShot](https://github.com/yatrikp/GoogleImageSearch/blob/master/Image-Search-1.JPG?raw=true)](http://player.vimeo.com/video/107114776)
 
  

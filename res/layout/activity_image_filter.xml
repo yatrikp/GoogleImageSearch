@@ -58,24 +58,24 @@
         android:ems="10" />
 
     <Spinner
-        android:id="@+id/spSize"
+        android:id="@+id/spinnerSize"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignLeft="@+id/etSite"
         android:layout_alignTop="@+id/tvSize" />
 
     <Spinner
-        android:id="@+id/spColor"
+        android:id="@+id/spinnerColor"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/spSize"
+        android:layout_alignLeft="@+id/spinnerSize"
         android:layout_alignTop="@+id/tvColor" />
 
     <Spinner
-        android:id="@+id/spType"
+        android:id="@+id/spinnerType"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/spColor"
+        android:layout_alignLeft="@+id/spinnerColor"
         android:layout_alignTop="@+id/tvType" />
 	
 	<TextView

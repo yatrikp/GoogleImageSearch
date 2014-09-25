@@ -112,9 +112,9 @@ containing a value of this type.
         public static final int menu_item_save=0x7f0a000f;
         public static final int menu_item_share=0x7f0a000e;
         public static final int panel_content=0x7f0a000c;
-        public static final int spColor=0x7f0a0007;
-        public static final int spSize=0x7f0a0006;
-        public static final int spType=0x7f0a0008;
+        public static final int spinnerColor=0x7f0a0007;
+        public static final int spinnerSize=0x7f0a0006;
+        public static final int spinnerType=0x7f0a0008;
         public static final int tvCancel=0x7f0a000a;
         public static final int tvColor=0x7f0a0002;
         public static final int tvDone=0x7f0a0009;

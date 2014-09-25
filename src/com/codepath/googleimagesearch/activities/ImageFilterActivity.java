@@ -27,33 +27,137 @@ public class ImageFilterActivity extends Activity {
 	private Spinner sizeSpinner;
 	private Spinner colorSpinner;
 	private Spinner typeSpinner;
-	private EditText site;
+	private EditText siteText;
 	private TextView done;
-	private TextView cancel;	
-
+	private TextView cancel;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_image_filter);
-		sizeSpinner = (Spinner) findViewById(R.id.spSize);
-		colorSpinner = (Spinner) findViewById(R.id.spColor);
-		typeSpinner = (Spinner) findViewById(R.id.spType);
-		site = (EditText) findViewById(R.id.etSite);
+		sizeSpinner = (Spinner) findViewById(R.id.spinnerSize);
+		colorSpinner = (Spinner) findViewById(R.id.spinnerColor);
+		typeSpinner = (Spinner) findViewById(R.id.spinnerType);
+		siteText = (EditText) findViewById(R.id.etSite);
 		done = (TextView) findViewById(R.id.tvDone);
 		cancel = (TextView) findViewById(R.id.tvCancel);
 		
 		filter = (ImageFilter) getIntent().getSerializableExtra(ImageSearchActivity.FILTER_KEY);
-		initSpinners();
-		initSiteText();
-		setupButton();
+		initializeControls();
+		initializeButtons();
 	}
 	
-	private void initSiteText() {
-		site.setText(filter.getSite());
-		site.setSelection(site.getText().length());	
-	}
+	private void initializeControls() {
+		List<String> types = new ArrayList<String>();
+		types.add("any");
+		types.add("face");
+		types.add("photo");
+		types.add("clipart");
+		types.add("lineart");
+		
+		ArrayAdapter<String> typeAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, types);
+		typeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		typeSpinner.setAdapter(typeAdapter);
+		
+		String type = filter.getType();
+		if(type == null || type.equals("") || type.equals("any")){
+			typeSpinner.setSelection(0);
+		}else if(type.equals("face")){
+			typeSpinner.setSelection(1);
+		}else if(type.equals("photo")){
+			typeSpinner.setSelection(2);
+		}else if(type.equals("clipart")){
+			typeSpinner.setSelection(3);
+		}else if(type.equals("lineart")){
+			typeSpinner.setSelection(4);
+		}
 
-	private void setupButton() {
+		// color spinner
+		List<String> colors = new ArrayList<String>();
+		colors.add("any");
+		colors.add("black");
+		colors.add("blue");
+		colors.add("brown");
+		colors.add("gray");
+		colors.add("orange");
+		colors.add("green");
+		colors.add("pink");
+		colors.add("red");
+		colors.add("white");
+		colors.add("yellow");
+		colors.add("purple");
+				
+		ArrayAdapter<String> colorAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, colors);
+		colorAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		colorSpinner.setAdapter(colorAdapter);
+		
+		String color = filter.getColor();
+		if(color == null || color.equals("") || color.equals("any")){
+			colorSpinner.setSelection(0);
+		}else if(color.equals("black")){
+			colorSpinner.setSelection(1);
+		}else if(color.equals("blue")){
+			colorSpinner.setSelection(2);
+		}else if(color.equals("brown")){
+			colorSpinner.setSelection(3);
+		}else if(color.equals("gray")){
+			colorSpinner.setSelection(4);
+		}else if(color.equals("orange")){
+			colorSpinner.setSelection(5);
+		}else if(color.equals("green")){
+			colorSpinner.setSelection(6);
+		}else if(color.equals("pink")){
+			colorSpinner.setSelection(7);
+		}else if(color.equals("red")){
+			colorSpinner.setSelection(8);
+		}else if(color.equals("white")){
+			colorSpinner.setSelection(9);
+		}else if(color.equals("yellow")){
+			colorSpinner.setSelection(10);
+		}else if(color.equals("purple")){
+			colorSpinner.setSelection(11);
+		}
+		
+		// size spinner
+		List<String> sizes = new ArrayList<String>();
+		sizes.add("any");
+		sizes.add("icon");
+		sizes.add("small");
+		sizes.add("medium");
+		sizes.add("large");
+		sizes.add("xlarge");
+		sizes.add("xxlarge");
+		sizes.add("huge");
+		
+		ArrayAdapter<String> sizeAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, sizes);
+		sizeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		sizeSpinner.setAdapter(sizeAdapter);
+		
+		String size = filter.getSize();
+		if(size == null || size.equals("") || size.equals("any")){
+			sizeSpinner.setSelection(0);
+		}else if(size.equals("icon")){
+			sizeSpinner.setSelection(1);
+		}else if(size.equals("small")){
+			sizeSpinner.setSelection(2);
+		}else if(size.equals("medium")){
+			sizeSpinner.setSelection(3);
+		}else if(size.equals("large")){
+			sizeSpinner.setSelection(4);
+		}else if(size.equals("xlarge")){
+			sizeSpinner.setSelection(5);
+		}else if(size.equals("xxlarge")){
+			sizeSpinner.setSelection(6);
+		}else if(size.equals("huge")){
+			sizeSpinner.setSelection(7);
+		}
+
+		// site
+		siteText.setText(filter.getSite());
+		siteText.setSelection(siteText.getText().length());	
+	}
+	
+	private void initializeButtons() {
 		done.setOnClickListener(new OnClickListener() {
 			
 			@Override
@@ -76,134 +180,20 @@ public class ImageFilterActivity extends Activity {
 		String size = sizeSpinner.getSelectedItem().toString();
 		String color = colorSpinner.getSelectedItem().toString();
 		String type = typeSpinner.getSelectedItem().toString();
-		String s = site.getText().toString();
+		String s = siteText.getText().toString();
 		
 		ImageFilter filter = new ImageFilter(size, color, type, s);
 		
 		Intent data = new Intent();
 		data.putExtra(ImageSearchActivity.FILTER_KEY, filter);
 		setResult(RESULT_OK, data);
-		//close this screen and go back
-		finish();
 		
-	}
-
-	private void initSpinners() {
-		
-		initSizeSpinner();
-		initColorSpinner();
-		initTypeSpinner();
-	}
-
-	private void initTypeSpinner() {
-		List<String> types = new ArrayList<String>();
-		types.add("any");
-		types.add("face");
-		types.add("photo");
-		types.add("clipart");
-		types.add("lineart");
-		
-		ArrayAdapter<String> typeAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, types);
-		typeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-		typeSpinner.setAdapter(typeAdapter);
-		
-		String current = filter.getType();
-		if(current == null || current.equals("") || current.equals("any")){
-			typeSpinner.setSelection(0);
-		}else if(current.equals("face")){
-			typeSpinner.setSelection(1);
-		}else if(current.equals("photo")){
-			typeSpinner.setSelection(2);
-		}else if(current.equals("clipart")){
-			typeSpinner.setSelection(3);
-		}else if(current.equals("lineart")){
-			typeSpinner.setSelection(4);
-		}
-
-	}
-
-	private void initColorSpinner() {
-		List<String> colors = new ArrayList<String>();
-		colors.add("any");
-		colors.add("black");
-		colors.add("blue");
-		colors.add("brown");
-		colors.add("gray");
-		colors.add("orange");
-		colors.add("green");
-		colors.add("pink");
-		colors.add("red");
-		colors.add("white");
-		colors.add("yellow");
-		colors.add("purple");
-		
-		
-		ArrayAdapter<String> colorAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, colors);
-		colorAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-		colorSpinner.setAdapter(colorAdapter);
-		
-		String current = filter.getColor();
-		if(current == null || current.equals("") || current.equals("any")){
-			colorSpinner.setSelection(0);
-		}else if(current.equals("black")){
-			colorSpinner.setSelection(1);
-		}else if(current.equals("blue")){
-			colorSpinner.setSelection(2);
-		}else if(current.equals("brown")){
-			colorSpinner.setSelection(3);
-		}else if(current.equals("gray")){
-			colorSpinner.setSelection(4);
-		}else if(current.equals("orange")){
-			colorSpinner.setSelection(5);
-		}else if(current.equals("green")){
-			colorSpinner.setSelection(6);
-		}else if(current.equals("pink")){
-			colorSpinner.setSelection(7);
-		}else if(current.equals("red")){
-			colorSpinner.setSelection(8);
-		}else if(current.equals("white")){
-			colorSpinner.setSelection(9);
-		}else if(current.equals("yellow")){
-			colorSpinner.setSelection(10);
-		}else if(current.equals("purple")){
-			colorSpinner.setSelection(11);
-		}
-	}
-
-	private void initSizeSpinner() {
-		List<String> sizes = new ArrayList<String>();
-		sizes.add("any");
-		sizes.add("icon");
-		sizes.add("small");
-		sizes.add("medium");
-		sizes.add("large");
-		sizes.add("xlarge");
-		sizes.add("xxlarge");
-		sizes.add("huge");
-		
-		ArrayAdapter<String> sizeAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, sizes);
-		sizeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-		sizeSpinner.setAdapter(sizeAdapter);
-		
-		String current = filter.getSize();
-		if(current == null || current.equals("") || current.equals("any")){
-			sizeSpinner.setSelection(0);
-		}else if(current.equals("icon")){
-			sizeSpinner.setSelection(1);
-		}else if(current.equals("small")){
-			sizeSpinner.setSelection(2);
-		}else if(current.equals("medium")){
-			sizeSpinner.setSelection(3);
-		}else if(current.equals("large")){
-			sizeSpinner.setSelection(4);
-		}else if(current.equals("xlarge")){
-			sizeSpinner.setSelection(5);
-		}
+		// end this activity to return to the parent activity
+		finish();		
 	}
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.image_filter, menu);
 		return true;
 	}

@@ -15,10 +15,10 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.text.Html;
+import android.text.TextUtils.TruncateAt;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.Window;
 import android.widget.ImageView;
 import android.widget.ShareActionProvider;
 import android.widget.TextView;
@@ -27,7 +27,6 @@ import android.widget.Toast;
 import com.codepath.googleimagesearch.R;
 import com.codepath.googleimagesearch.adapters.TouchImageView;
 import com.codepath.googleimagesearch.models.ImageResult;
-import com.codepath.googleimagesearch.utils.Util;
 import com.squareup.picasso.Picasso;
 
 public class ImageDisplayActivity extends Activity {
@@ -41,10 +40,8 @@ public class ImageDisplayActivity extends Activity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		setContentView(R.layout.activity_image_display);
 		getActionBar().setDisplayHomeAsUpEnabled(true);
-		
 		
 		// pull the out the url for image to display
 		ImageResult imageResult = (ImageResult) getIntent().getSerializableExtra(ImageSearchActivity.FILTER_KEY);
@@ -55,12 +52,13 @@ public class ImageDisplayActivity extends Activity {
             if (titleId > 0){
                 TextView titleView = (TextView)findViewById(titleId);
                 titleView.setTextSize(10);
+                titleView.setSingleLine(false);
+                titleView.setMaxLines(2);
+                titleView.setEllipsize(TruncateAt.END);
             }
         } catch (Exception e) {
             Log.e("", "Failed to obtain action bar title reference");
         }
-		
-		
 		
 		// find the image view
 		TouchImageView imageView = (TouchImageView)findViewById(R.id.ivImageResult);
@@ -157,7 +155,6 @@ public class ImageDisplayActivity extends Activity {
 	}
 	
 	private void saveImage() {
-		Uri uri = null;
 		OutputStream outputStream = null;
 		TouchImageView ivImageResult = (TouchImageView) findViewById(R.id.ivImageResult);
 		ivImageResult.buildDrawingCache();
@@ -166,7 +163,7 @@ public class ImageDisplayActivity extends Activity {
 		try {
 			File dir = new File(this.getFilesDir(),
 					System.currentTimeMillis() + ".png");
-			uri = Uri.fromFile(dir);
+			Uri uri = Uri.fromFile(dir);
 			outputStream = new FileOutputStream(dir);
 		} catch (Exception e) {
 			Toast.makeText(this, "Error occured",

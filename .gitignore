@@ -1,0 +1,19 @@
+# built application files
+*.apk
+*.ap_
+
+# Java class files
+*.class
+
+# generated files
+bin/
+bin/**
+gen/
+
+tmp/**
+tmp/**/*
+*.tmp
+*.bak
+
+.settings/
+

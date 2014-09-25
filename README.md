@@ -38,13 +38,13 @@ Bonus
 TODO
 ----
 
-- [] Use Parceble instead of Serializable
-- [] Implement View Pager to allow users swipe through images once in the Image view Activity
+- Use Parceble instead of Serializable
+- Implement View Pager to allow users swipe through images once in the Image view Activity
 
 Time Spent : 30 hours
 
 Screenshots
 -----------
-![Alt text](image-search-2.mp4?raw=true)
+[![ScreenShot](https://github.com/yatrikp/GoogleImageSearch/blob/master/Image-Search-1.JPG?raw=true)](http://player.vimeo.com/video/107114776)
 
  
